@@ -1,0 +1,63 @@
+package com.ejemplo;
+
+import java_cup.runtime.*;
+import com.ejemplo.AST.*;
+
+parser code {:
+    // Los errores de sintaxis se informan con linea y columna
+    public void syntax_error(Symbol cur) {
+        if (cur.left < 0)
+            throw new RuntimeException("Error sintactico: fin de archivo inesperado");
+        throw new RuntimeException("Error sintactico en linea " + (cur.left + 1)
+                + ", columna " + (cur.right + 1));
+    }
+:}
+
+terminal INT, BOOL, VOID, MAIN, RETURN, PRINT, TRUE, FALSE;
+terminal SEMI, PLUS, TIMES, EQUAL, LPAREN, RPAREN, LBRACE, RBRACE;
+terminal Integer NUMBER;
+terminal String ID;
+
+non terminal Programa program;
+non terminal TipoNodo tipo_ret, tipo;
+non terminal ListaDecl decls;
+non terminal Decl decl;
+non terminal ListaSent sents;
+non terminal Sent sent;
+non terminal Expr expr;
+
+precedence left PLUS;
+precedence left TIMES;
+
+start with program;
+
+program  ::= tipo_ret:t MAIN LPAREN RPAREN LBRACE decls:d sents:s RBRACE
+             {: RESULT = new Programa(t, d, s); :} ;
+
+tipo_ret ::= INT  {: RESULT = TipoNodo.INT; :}
+           | BOOL {: RESULT = TipoNodo.BOOL; :}
+           | VOID {: RESULT = TipoNodo.VOID; :} ;
+
+decls    ::= decls:l decl:d {: l.add(d); RESULT = l; :}
+           | decl:d         {: ListaDecl l = new ListaDecl(); l.add(d); RESULT = l; :} ;
+
+decl     ::= tipo:t ID:n SEMI {: RESULT = new Decl(t, n); :} ;
+
+tipo     ::= INT  {: RESULT = TipoNodo.INT; :}
+           | BOOL {: RESULT = TipoNodo.BOOL; :} ;
+
+sents    ::= sents:l sent:s {: l.add(s); RESULT = l; :}
+           |                {: RESULT = new ListaSent(); :} ;
+
+sent     ::= ID:n EQUAL expr:e SEMI {: RESULT = new Asig(n, e); :}
+           | PRINT expr:e SEMI      {: RESULT = new Print(e); :}
+           | RETURN expr:e SEMI     {: RESULT = new Ret(e); :}
+           | RETURN SEMI            {: RESULT = new Ret(null); :} ;
+
+expr     ::= expr:a PLUS expr:b   {: RESULT = new Suma(a, b); :}
+           | expr:a TIMES expr:b  {: RESULT = new Mult(a, b); :}
+           | LPAREN expr:e RPAREN {: RESULT = e; :}
+           | NUMBER:n             {: RESULT = new Num(n.intValue()); :}
+           | TRUE                 {: RESULT = new Bool(true); :}
+           | FALSE                {: RESULT = new Bool(false); :}
+           | ID:n                 {: RESULT = new Var(n); :} ;

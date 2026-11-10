@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.ejemplo</groupId>
+    <artifactId>Proyecto_Compiladores</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- Runtime de CUP (jar local en lib/) -->
+        <dependency>
+            <groupId>java_cup</groupId>
+            <artifactId>java-cup-runtime</artifactId>
+            <version>11b</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/java-cup-11b-runtime.jar</systemPath>
+        </dependency>
+    </dependencies>
+</project>
