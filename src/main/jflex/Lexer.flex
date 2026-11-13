@@ -36,6 +36,9 @@ dec_int_id  = [A-Za-z][A-Za-z0-9]*
     "main"     { return symbol(Sym.MAIN); }
     "return"   { return symbol(Sym.RETURN); }
     "print"    { return symbol(Sym.PRINT); }
+    "if"       { return symbol(Sym.IF); }
+    "else"     { return symbol(Sym.ELSE); }
+    "while"    { return symbol(Sym.WHILE); }
     "true"     { return symbol(Sym.TRUE); }
     "false"    { return symbol(Sym.FALSE); }
 

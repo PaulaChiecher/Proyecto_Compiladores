@@ -13,7 +13,7 @@ parser code {:
     }
 :}
 
-terminal INT, BOOL, VOID, MAIN, RETURN, PRINT, TRUE, FALSE;
+terminal INT, BOOL, VOID, MAIN, RETURN, PRINT, TRUE, FALSE, IF, ELSE, WHILE;
 terminal SEMI, PLUS, TIMES, EQUAL, LPAREN, RPAREN, LBRACE, RBRACE;
 terminal Integer NUMBER;
 terminal String ID;
@@ -52,7 +52,13 @@ sents    ::= sents:l sent:s {: l.add(s); RESULT = l; :}
 sent     ::= ID:n EQUAL expr:e SEMI {: RESULT = new Asig(n, e); :}
            | PRINT expr:e SEMI      {: RESULT = new Print(e); :}
            | RETURN expr:e SEMI     {: RESULT = new Ret(e); :}
-           | RETURN SEMI            {: RESULT = new Ret(null); :} ;
+           | RETURN SEMI            {: RESULT = new Ret(null); :}
+           | IF LPAREN expr:c RPAREN LBRACE sents:a RBRACE
+             {: RESULT = new If(c, a, null); :}
+           | IF LPAREN expr:c RPAREN LBRACE sents:a RBRACE ELSE LBRACE sents:b RBRACE
+             {: RESULT = new If(c, a, b); :}
+           | WHILE LPAREN expr:c RPAREN LBRACE sents:a RBRACE
+             {: RESULT = new While(c, a); :} ;
 
 expr     ::= expr:a PLUS expr:b   {: RESULT = new Suma(a, b); :}
            | expr:a TIMES expr:b  {: RESULT = new Mult(a, b); :}

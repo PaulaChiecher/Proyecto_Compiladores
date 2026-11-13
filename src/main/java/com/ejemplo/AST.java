@@ -61,6 +61,33 @@ public class AST {
         public String toString() { return expr == null ? "return" : "return " + expr; }
     }
 
+    public static class If extends Sent {
+        public final Expr cond;
+        public final ListaSent entonces;
+        public final ListaSent sino;     // null si no hay else
+        public If(Expr cond, ListaSent entonces, ListaSent sino) {
+            this.cond = cond; this.entonces = entonces; this.sino = sino;
+        }
+        public String toString() {
+            return "if " + cond + " { " + lista(entonces) + "}"
+                    + (sino == null ? "" : " else { " + lista(sino) + "}");
+        }
+    }
+
+    public static class While extends Sent {
+        public final Expr cond;
+        public final ListaSent cuerpo;
+        public While(Expr cond, ListaSent cuerpo) { this.cond = cond; this.cuerpo = cuerpo; }
+        public String toString() { return "while " + cond + " { " + lista(cuerpo) + "}"; }
+    }
+
+    /** Texto de una lista de sentencias (para imprimir los bloques del if / while). */
+    private static String lista(ListaSent l) {
+        StringBuilder sb = new StringBuilder();
+        for (Sent s : l) sb.append(s).append("; ");
+        return sb.toString();
+    }
+
     /* ---------- Declaraciones y programa ---------- */
     public static class Decl {
         public final TipoNodo tipo;

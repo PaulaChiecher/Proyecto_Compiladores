@@ -21,6 +21,10 @@ public class InstruccionC3D {
             case PRINT_INT:  return "print " + arg1;
             case PRINT_BOOL: return "print_bool " + arg1;
             case RETURN:     return arg1 == null ? "return" : "return " + arg1;
+            case OR:         return resultado + " = " + arg1 + " or " + arg2;
+            case LABEL:      return "LABEL " + arg1;
+            case SALTO:      return "SALTO " + arg1;
+            case IFFALSO:    return "IFFALSO " + arg1 + " " + arg2;
         }
         return "?";
     }

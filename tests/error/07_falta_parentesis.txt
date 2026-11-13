@@ -1,0 +1,1 @@
+int main(){ int x; bool b; x = 1; b = true; while (b { x = 2; } return x; }

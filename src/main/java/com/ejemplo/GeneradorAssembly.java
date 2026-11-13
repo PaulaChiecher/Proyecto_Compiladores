@@ -14,6 +14,14 @@ public class GeneradorAssembly {
 
     /* ===================== Pseudo-assembly de pila ===================== */
 
+    private final TablaSimbolos tabla;   // para saber si una suma es de int o de bool
+
+    public GeneradorAssembly(TablaSimbolos tabla) {
+        this.tabla = tabla;
+    }
+
+    private int etiquetas;               // contador de etiquetas del pseudo-assembly
+
     private StringBuilder ps;
 
     public String generarPseudo(Programa p) {
@@ -21,7 +29,15 @@ public class GeneradorAssembly {
         ps.append("; variables\n");
         for (Decl d : p.decls) ps.append("VAR ").append(d.nombre).append("\n");
         ps.append("; codigo\n");
-        for (Sent s : p.sents) {
+        etiquetas = 0;
+        pseudoBloque(p.sents);
+        ps.append("HALT\n");
+        return ps.toString();
+    }
+
+    /** Pseudo-assembly de una lista de sentencias (main, o el bloque de un if / while). */
+    private void pseudoBloque(List<Sent> sents) {
+        for (Sent s : sents) {
             if (s instanceof Asig a) {
                 ps.append("PUSHA ").append(a.nombre).append("\n");
                 pseudo(a.expr);
@@ -32,17 +48,42 @@ public class GeneradorAssembly {
             } else if (s instanceof Ret r) {
                 if (r.expr != null) pseudo(r.expr);
                 ps.append("RET\n");
+            } else if (s instanceof If i) {
+                String lelse = (i.sino != null) ? "L" + (++etiquetas) : null;
+                String lfin = "L" + (++etiquetas);
+                pseudo(i.cond);
+                if (i.sino == null) {
+                    ps.append("IFFALSO ").append(lfin).append("\n");
+                    pseudoBloque(i.entonces);
+                } else {
+                    ps.append("IFFALSO ").append(lelse).append("\n");
+                    pseudoBloque(i.entonces);
+                    ps.append("SALTO ").append(lfin).append("\n");
+                    ps.append("LABEL ").append(lelse).append("\n");
+                    pseudoBloque(i.sino);
+                }
+                ps.append("LABEL ").append(lfin).append("\n");
+            } else if (s instanceof While w) {
+                String linicio = "L" + (++etiquetas);
+                String lfin = "L" + (++etiquetas);
+                ps.append("LABEL ").append(linicio).append("\n");
+                pseudo(w.cond);
+                ps.append("IFFALSO ").append(lfin).append("\n");
+                pseudoBloque(w.cuerpo);
+                ps.append("SALTO ").append(linicio).append("\n");
+                ps.append("LABEL ").append(lfin).append("\n");
             }
         }
-        ps.append("HALT\n");
-        return ps.toString();
     }
 
     private void pseudo(Expr e) {
         if (e instanceof Num n) ps.append("PUSHC ").append(n.valor).append("\n");
         else if (e instanceof Bool b) ps.append("PUSHC ").append(b.valor ? 1 : 0).append("\n");
         else if (e instanceof Var v) ps.append("PUSHA ").append(v.nombre).append("\nLOAD\n");
-        else if (e instanceof Suma s) { pseudo(s.izq); pseudo(s.der); ps.append("ADD\n"); }
+        else if (e instanceof Suma s) {
+            pseudo(s.izq); pseudo(s.der);
+            ps.append(TipoExpr.de(s, tabla) == TipoNodo.BOOL ? "OR\n" : "ADD\n");
+        }
         else if (e instanceof Mult m) { pseudo(m.izq); pseudo(m.der); ps.append("MUL\n"); }
     }
 
@@ -92,6 +133,11 @@ public class GeneradorAssembly {
                     linea("    addl    " + operando(ins.arg2) + ", %eax");
                     linea("    movl    %eax, " + dir(ins.resultado));
                     break;
+                case OR:
+                    linea("    movl    " + operando(ins.arg1) + ", %eax");
+                    linea("    orl     " + operando(ins.arg2) + ", %eax");
+                    linea("    movl    %eax, " + dir(ins.resultado));
+                    break;
                 case MULT:
                     linea("    movl    " + operando(ins.arg1) + ", %eax");
                     linea("    imull   " + operando(ins.arg2) + ", %eax");
@@ -112,6 +158,17 @@ public class GeneradorAssembly {
                     linea("    leaq    .LC_str(%rip), %rdi");
                     linea("    movl    $0, %eax");
                     linea("    call    printf@PLT");
+                    break;
+                case LABEL:
+                    linea("." + ins.arg1 + ":");
+                    break;
+                case SALTO:
+                    linea("    jmp     ." + ins.arg1);
+                    break;
+                case IFFALSO:
+                    linea("    movl    " + operando(ins.arg1) + ", %eax");
+                    linea("    cmpl    $0, %eax");
+                    linea("    je      ." + ins.arg2);
                     break;
                 case RETURN:
                     if (ins.arg1 != null) linea("    movl    " + operando(ins.arg1) + ", %eax");

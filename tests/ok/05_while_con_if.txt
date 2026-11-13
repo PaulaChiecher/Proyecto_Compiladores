@@ -1,0 +1,1 @@
+int main(){ int x; bool y; bool z; x = 1; y = true; z = false; while (y) { if (z) { x = 100; } else { x = x * 5; } y = false; } print x; return x; }

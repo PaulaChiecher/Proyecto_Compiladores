@@ -27,11 +27,16 @@ public class Main {
             // 3. Interprete
             System.out.println("=== Ejecucion (interprete) ===");
             Interprete in = new Interprete(tabla);
-            in.ejecutar(prog);
-            System.out.println("Valor retornado: " + in.resultado);
+            try {
+                in.ejecutar(prog);
+                System.out.println("Valor retornado: " + in.resultado);
+            } catch (RuntimeException e) {
+                // un error al ejecutar no impide seguir generando codigo
+                System.out.println(e.getMessage());
+            }
 
             // 4. Pseudo-assembly de pila
-            GeneradorAssembly gen = new GeneradorAssembly();
+            GeneradorAssembly gen = new GeneradorAssembly(tabla);
             System.out.println("=== Pseudo-assembly (pila) ===");
             System.out.print(gen.generarPseudo(prog));
 
