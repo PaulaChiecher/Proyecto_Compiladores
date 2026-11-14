@@ -25,8 +25,7 @@ Guía completa para **descargar, instalar, compilar, ejecutar y probar** el proy
 12. [Ensamblar y ejecutar el assembly x86-64](#12-ensamblar-y-ejecutar-el-assembly-x86-64)
 13. [Solución de problemas](#13-solución-de-problemas)
 14. [Checklist de entrega](#14-checklist-de-entrega)
-15. [Actualizar el README en GitHub](#15-actualizar-el-readme-en-github)
-16. [Guía para explicar el proyecto](#16-guía-para-explicar-el-proyecto)
+15. [Guía para explicar el proyecto](#15-guía-para-explicar-el-proyecto)
 
 ---
 
@@ -990,7 +989,7 @@ int main() {
 - Una variable debe estar declarada para poder usarse.
 - No se puede declarar dos veces la misma variable.
 - Una asignación debe respetar el tipo de la variable.
-- El intérprete inicializa las variables en `0` o `false` a nivel de assembly, pero en el intérprete Java una variable no inicializada produce un error de ejecución si se lee antes de asignarle un valor.
+- Las variables se inicializan en `0` (`int`) o `false` (`bool`) al declararse, tanto en el intérprete como en el assembly.
 
 ### 9.8 Condicional `if` / `else`
 
@@ -1127,6 +1126,20 @@ El lexer reconoce:
 - Espacios en blanco: se ignoran.
 
 Los identificadores comienzan con una letra y continúan con letras o números. No se admite `_` ni acentos.
+
+### Expresiones regulares del lenguaje
+
+| Categoría | Expresión regular |
+|---|---|
+| Palabras reservadas | `int \| bool \| void \| main \| return \| print \| if \| else \| while \| true \| false` |
+| Identificadores (variables) | `[A-Za-z][A-Za-z0-9]*` |
+| Constantes enteras | `0 \| [1-9][0-9]*` |
+| Constantes lógicas | `true \| false` |
+| Operadores | `+ \| * \| =` |
+| Delimitadores | `; \| ( \| ) \| { \| }` |
+| Espacios (se ignoran) | `[ \t\f\r\n]+` |
+
+Las palabras reservadas tienen prioridad sobre los identificadores porque aparecen primero en `Lexer.flex`. Si no, `if` se reconocería como un identificador.
 
 Ante un carácter no reconocido, se informa un error léxico con línea y columna. Ejemplo:
 
@@ -1654,49 +1667,14 @@ Antes de entregar o defender el proyecto, verificar:
 - [ ] El README coincide con el comportamiento real.
 - [ ] Si se usó GCC/WSL, el assembly de `entrada.txt` imprime `14` y devuelve código 14.
 - [ ] No se ejecutó el assembly de `09_bucle_infinito.txt`.
-- [ ] El README de GitHub está actualizado (ver sección 15).
 
 ---
 
-## 15. Actualizar el README en GitHub
-
-El README que estás leyendo es el de la **copia local**. El repositorio de GitHub puede tener una versión anterior hasta que se haga un `commit` y un `push`.
-
-### Opción A: Git desde la terminal
-
-Desde la raíz del proyecto:
-
-```bash
-git status
-git diff -- README.md
-git add README.md
-git commit -m "docs: completa guía de instalación, uso y pruebas"
-git push origin main
-```
-
-> Ejecutar estos comandos solamente si tenés permisos de escritura en el repositorio y si ya revisaste los cambios con `git diff`.
-
-### Opción B: Editar directamente en GitHub
-
-1. Abrir el repositorio en GitHub.
-2. Entrar a `README.md`.
-3. Hacer clic en el lápiz (**Edit this file**).
-4. Reemplazar el contenido por el de este README.
-5. Hacer clic en **Commit changes**.
-
-### Verificar que GitHub quedó actualizado
-
-1. Abrir [https://github.com/PaulaChiecher/Proyecto_Compiladores](https://github.com/PaulaChiecher/Proyecto_Compiladores).
-2. Verificar que el README muestre esta guía completa.
-3. Si no se ve, revisar que el `push` haya terminado correctamente y que estés mirando la rama `main`.
-
----
-
-## 16. Guía para explicar el proyecto
+## 15. Guía para explicar el proyecto
 
 Esta sección sirve para preparar la defensa oral o una explicación rápida ante el docente.
 
-### 16.1 Explicación en 5 minutos
+### 15.1 Explicación en 5 minutos
 
 1. **Objetivo:** construir un compilador para un mini lenguaje con `int`, `bool`, `void`, asignaciones, `print`, `return`, `if`, `else` y `while`.
 2. **Tecnologías:** Java 21, JFlex para el lexer y CUP para el parser.
@@ -1709,7 +1687,7 @@ Esta sección sirve para preparar la defensa oral o una explicación rápida ant
 9. **Pruebas:** 9 casos correctos, 9 casos de error y 5 archivos de ejemplo.
 10. **Limitaciones:** no hay operadores relacionales, división, resta, funciones adicionales ni comentarios.
 
-### 16.2 Preguntas probables y respuestas
+### 15.2 Preguntas probables y respuestas
 
 **¿Por qué usaron JFlex y CUP?**  
 Porque son herramientas estándar para generar lexers y parsers en Java, permiten separar la especificación léxica de la gramática y generan código reproducible.
@@ -1747,7 +1725,7 @@ Con 9 programas correctos, 9 programas con errores y 5 archivos de ejemplo. Las 
 **¿Cómo se extendería el lenguaje?**  
 Agregando tokens en `Lexer.flex`, producciones en `parser.cup`, nodos en `AST.java`, reglas en `AnalizadorSemantico.java`, evaluación en `Interprete.java` y generación en `GeneradorC3D.java` y `GeneradorAssembly.java`.
 
-### 16.3 Demostración sugerida
+### 15.3 Demostración sugerida
 
 1. Mostrar la estructura del proyecto.
 2. Compilar en vivo con el comando de la sección 6.
@@ -1757,18 +1735,6 @@ Agregando tokens en `Lexer.flex`, producciones en `parser.cup`, nodos en `AST.ja
 6. Ejecutar `tests/error/08_caracter_ilegal.txt` y mostrar el error léxico.
 7. Mostrar `salida.s` y explicar las instrucciones principales.
 8. Si hay GCC/WSL, ensamblar y ejecutar `salida.s`.
-
----
-
-## Estado de verificación
-
-La versión actual del proyecto fue verificada con:
-
-- **Java:** OpenJDK 21.0.7 (Corretto 21.0.7).
-- **Compilación:** `javac -encoding UTF-8 -cp "lib/java-cup-11b-runtime.jar" -d out src/main/java/com/ejemplo/*.java` → sin errores (solo un aviso de API obsoleta en `Parser.java`).
-- **Pruebas:** se ejecutaron los 9 archivos de `tests/ok/`, los 9 de `tests/error/` y los 5 de `src/main/resources/`. Los resultados son los de las tablas de la sección 11.
-- **JFlex/CUP:** la regeneración produce `0 errors`, `0 warnings` y `0 conflicts detected`. Los archivos generados coinciden con los incluidos, salvo por la fecha de generación.
-- **GCC/WSL:** no se pudo ejecutar el paso de ensamblado en el entorno de verificación porque no hay GCC ni WSL instalados. Los comandos de la sección 12 son los estándar para GNU/Linux.
 
 ---
 
